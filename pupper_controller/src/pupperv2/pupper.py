@@ -82,6 +82,14 @@ class Pupper:
         self.command.pitch = action['pitch'] or 0.0
         self.config.x_shift = action['com_x_shift'] or self.config.x_shift
 
+        self.config.z_clearance = action['z_clearance'] or self.config.z_clearance
+        self.config.alpha = action['alpha'] or self.config.alpha
+        self.config.beta = action['beta'] or self.config.beta
+        self.config.overlap_time = action['overlap_time'] or self.config.overlap_time
+        self.config.swing_time = action['swing_time'] or self.config.swing_time
+        self.config.delta_x = action['delta_x'] or self.config.delta_x
+        self.config.delta_y = action['delta_y'] or self.config.delta_y
+
         # Clip actions to reasonable values
         self.command.horizontal_velocity = np.clip(self.command.horizontal_velocity,
                                                    (self.config.min_x_velocity,
@@ -101,6 +109,13 @@ class Pupper:
         self.config.x_shift = np.clip(self.config.x_shift,
                                       self.config.min_x_shift,
                                       self.config.max_x_shift)
+        self.config.z_clearance = np.clip(self.config.z_clearance, 0.10, 0.065)
+        self.config.alpha = np.clip(self.config.alpha, 0.3, 0.7)
+        self.config.beta = np.clip(self.config.beta, 0.3, 0.7)
+        self.config.overlap_time = np.clip(self.config.overlap_time, 0.01, 0.1)
+        self.config.swing_time = np.clip(self.config.swing_time, 0.01, 0.1)
+        self.config.delta_x = np.clip(self.config.delta_x, 0.05, 0.15)
+        self.config.delta_y = np.clip(self.config.delta_y, 0.05, 0.15)
 
     def step(self, action):
         """
