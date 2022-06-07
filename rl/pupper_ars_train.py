@@ -26,8 +26,8 @@ from arspb.shared_noise import *
 import os
 from pupper_controller.src.pupperv2 import pupper_env
 
-def create_pupper_env():
-  env = pupper_env.PupperEnv(render=False)
+def create_pupper_env(action="F"):
+  env = pupper_env.PupperEnv(render=False, action="F")
   return env
   
   
@@ -43,6 +43,7 @@ class Worker(object):
                  env_name='',
                  policy_params = None,
                  deltas=None,
+                 action="F",
                  rollout_length=1000,
                  delta_std=0.01):
 
@@ -56,7 +57,7 @@ class Worker(object):
         except:
           pass
 
-        self.env = create_pupper_env()#gym.make(env_name)
+        self.env = create_pupper_env(action)#gym.make(env_name)
         self.env.seed(env_seed)
 
         # each worker gets access to the shared noise table
@@ -96,7 +97,6 @@ class Worker(object):
 
         total_reward = 0.
         steps = 0
-
         ob = self.env.reset()
         for i in range(rollout_length):
             action = self.policy.act(ob)
@@ -196,7 +196,7 @@ class ARSLearner(object):
         except:
           pass
 
-        env = create_pupper_env()#gym.make(env_name)
+        env = create_pupper_env(params.action)#gym.make(env_name)
         
         self.timesteps = 0
         self.action_size = env.action_space.shape[0]
@@ -212,7 +212,15 @@ class ARSLearner(object):
         self.max_past_avg_reward = float('-inf')
         self.num_episodes_used = float('inf')
 
-        
+        if params.action == "F":
+          self.filename = "Forward_"
+        elif params.action == "B":
+          self.filename = "Backward_"
+        elif params.action == "L":
+          self.filename = "Left_Turn_"
+        elif params.action == "R":
+          self.filename = "Right_Turn_"
+
         # create shared table for storing noise
         print("Creating deltas table.")
         deltas_id = create_shared_noise.remote()
@@ -226,6 +234,7 @@ class ARSLearner(object):
                                       env_name=env_name,
                                       policy_params=policy_params,
                                       deltas=deltas_id,
+                                      action=params.action,
                                       rollout_length=rollout_length,
                                       delta_std=delta_std) for i in range(num_workers)]
 
@@ -233,10 +242,12 @@ class ARSLearner(object):
         # initialize policy 
         if policy_params['type'] == 'linear':
             print("LinearPolicy2")
+            self.filename += "Linear"
             self.policy = LinearPolicy2(policy_params)
             self.w_policy = self.policy.get_weights()
         elif policy_params['type'] == 'nn':
             print("FullyConnectedNeuralNetworkPolicy")
+            self.filename += "NN"
             self.policy = FullyConnectedNeuralNetworkPolicy(policy_params)
             self.w_policy = self.policy.get_weights()
         else:
@@ -356,12 +367,12 @@ class ARSLearner(object):
                 
                 rewards = self.aggregate_rollouts(num_rollouts = 100, evaluate = True)
                 w = ray.get(self.workers[0].get_weights_plus_stats.remote())
-                np.savez(self.logdir + "/lin_policy_plus_latest", w)
+                np.savez(self.logdir + "/" + self.filename + "_plus_latest", w)
                 
                 mean_rewards = np.mean(rewards)
                 if (mean_rewards > best_mean_rewards):
                   best_mean_rewards = mean_rewards
-                  np.savez(self.logdir + "/lin_policy_plus_best_"+str(i+1), w)
+                  np.savez(self.logdir + "/" + self.filename + "_plus_best_"+str(i+1), w)
                   
                 
                 print(sorted(self.params.items()))
@@ -413,7 +424,7 @@ def run_ars(params):
       import tds_environments
     except:
       pass
-    env = create_pupper_env()#gym.make(params['env_name'])
+    env = create_pupper_env(params.action)#gym.make(params['env_name'])
     ob_dim = env.observation_space.shape[0]
     ac_dim = env.action_space.shape[0]
     ac_lb = env.action_space.low
@@ -445,7 +456,6 @@ def run_ars(params):
                      'action_lower_bound' : ac_lb,
                      'action_upper_bound' : ac_ub,
       }
-    
     
     ARS = ARSLearner(env_name=params['env_name'],
                      policy_params=policy_params,
@@ -489,7 +499,8 @@ if __name__ == '__main__':
     parser.add_argument('--filter', type=str, default='MeanStdFilter')
     parser.add_argument('--activation', type=str, help="Neural network policy activation function, tanh or clip", default="tanh")
 
-    parser.add_argument('--policy_network_size', action='store', dest='policy_network_size_list',type=str, nargs='*', default='64,64')   
+    parser.add_argument('--policy_network_size', action='store', dest='policy_network_size_list',type=str, nargs='*', default='64,64') 
+    parser.add_argument('--action', type=str, default='F')  
     args = parser.parse_args() 
     params = vars(args)
 

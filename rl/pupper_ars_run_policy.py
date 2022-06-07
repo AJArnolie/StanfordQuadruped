@@ -20,15 +20,15 @@ import pickle
 
 from pupper_controller.src.pupperv2 import pupper_env
 
-def create_pupper_env():
-  env = pupper_env.PupperEnv(render=True)
+def create_pupper_env(action="F"):
+  env = pupper_env.PupperEnv(render=True, action="F")
   return env
 
 
 def main(argv):
   import argparse
   parser = argparse.ArgumentParser()
-  parser.add_argument('--expert_policy_file', type=str, default="data/lin_policy_plus_latest.npz", help='relative path to the policy weights. Defaults to where ars_train outputs weight file.')
+  parser.add_argument('--expert_policy_file', type=str, default="data/Right_Turn_Linear_plus_latest.npz", help='relative path to the policy weights. Defaults to where ars_train outputs weight file.')
 
   parser.add_argument('--num_rollouts', type=int, default=20,
                       help='Number of expert rollouts. Default is 20.')
@@ -40,6 +40,7 @@ def main(argv):
   parser.add_argument("--log_to_file", default=False, action='store_true', help="Whether to log data to the disk.")
   parser.add_argument("--realtime", default=False, action="store_true", help="Run at realtime.")
   parser.add_argument("--playback_speed", type=float, default=None, help="Playback speed if using the realtime flag.")
+  parser.add_argument('--action', type=str, default='F')  
   if len(argv):
     args = parser.parse_args(argv)
   else:
@@ -51,6 +52,25 @@ def main(argv):
   with open(args.json_file) as f:
       params = json.load(f)
   print("params=",params)
+
+  filename = ""
+
+  if args.action == "F":
+    filename = "Forward_"
+  elif args.action == "B":
+    filename = "Backward_"
+  elif args.action == "L":
+    filename = "Left_Turn_"
+  elif args.action == "R":
+    filename = "Right_Turn_"
+
+  if params['policy_type'] == "linear":
+    filename += "Linear"
+  else:
+    filename += "NN"
+
+  args.expert_policy_file = "data/" + filename + "_plus_latest.npz"
+
   if len(args.expert_policy_file)==0:
     args.expert_policy_file=tp.getDataPath()+"/"+args.envname+"/nn_policy_plus.npz" 
     if not os.path.exists(args.expert_policy_file):
@@ -58,7 +78,8 @@ def main(argv):
   data = np.load(args.expert_policy_file, allow_pickle=True)
 
   print('create gym environment:', params["env_name"])
-  env = create_pupper_env()#gym.make(params["env_name"])
+  env = create_pupper_env(args.action)#gym.make(params["env_name"])
+  
 
 
   lst = data.files

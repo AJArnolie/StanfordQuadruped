@@ -18,10 +18,7 @@ def run_example():
         while True:
             actions = {"x_velocity": 0.3,
                        "y_velocity": 0.0,
-                       "yaw_rate": 0.0,
-                       "height": -0.14,
-                       "pitch": 0,
-                       "com_x_shift": -0.04}
+                       "yaw_rate": 0.0,}
             obs, reward, done, _ = env.step(actions=actions)
 
             env_step += 1

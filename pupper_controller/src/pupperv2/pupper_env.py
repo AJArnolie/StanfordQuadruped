@@ -14,6 +14,7 @@ class PupperEnv(gym.Env):
         run_on_robot=False,
         render=True,
         render_meshes=False,
+        action="F",
         plane_tilt=0.0
     ):
         """
@@ -25,6 +26,8 @@ class PupperEnv(gym.Env):
             render_meshes: If simulating, whether to use visually detailed model or basic model
             plane_tilt: Tilt in radians of the ground plane
         """
+        self.action = action # F, B, L, R
+
         self.action_keys = ["x_velocity", "y_velocity", "yaw_rate", "height", "pitch", "x_com_shift", 
                             "z_clearance", "alpha", "beta", "overlap_time", "swing_time", "delta_x", "delta_y"]
 
@@ -65,9 +68,32 @@ class PupperEnv(gym.Env):
         self.pupper.start_trot()
         return self.pupper.get_observation()
 
-    def reward(self, observation):
+    def forward_reward(self, observation):
         dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
         return 1.0 + dx
+
+    def backward_reward(self, observation):
+        dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
+        return 1.0 - dx
+    
+    def turn_left_reward(self, observation):
+        dx = self.pupper.angular_velocity()[0] * self.pupper.config.dt
+        return 1.0 + dx
+
+    def turn_right_reward(self, observation):
+        dx = self.pupper.angular_velocity()[0] * self.pupper.config.dt
+        return 1.0 - dx
+
+    def getReward(self, observation):
+        if self.action == "F":
+            return self.forward_reward(observation)
+        elif self.action == "B":
+            return self.backward_reward(observation)
+        elif self.action == "L":
+            return self.turn_left_reward(observation)
+        elif self.action == "R":
+            return self.turn_right_reward(observation)
+        return self.forward_reward(observation)
 
     def terminate(self, observation):
         roll = observation[0]
@@ -84,13 +110,55 @@ class PupperEnv(gym.Env):
 
         return False
 
-        # # TODO think about threshold
-        # return abs(roll) > math.pi/4 or abs(pitch) > math.pi/4
-
     def step(self, actions):
         if isinstance(actions, dict):
             action_dict = actions
-        else:
+        elif self.action == "F":
+            action_dict = {'x_velocity': actions[0],
+                           'y_velocity': actions[1],
+                           'yaw_rate': actions[2],
+                           'height': actions[3],
+                           'pitch': actions[4],
+                           'com_x_shift': actions[5],
+                           'z_clearance': actions[6],
+                           'alpha': actions[7],
+                           'beta': actions[8],
+                        #    'overlap_time': actions[9],
+                        #    'swing_time': actions[10],
+                        #    'delta_x': actions[11],
+                           'delta_y': actions[12],
+                           }
+        elif self.action == "B":
+            action_dict = {'x_velocity': actions[0],
+                           'y_velocity': actions[1],
+                           'yaw_rate': actions[2],
+                           'height': actions[3],
+                           'pitch': actions[4],
+                           'com_x_shift': actions[5],
+                           'z_clearance': actions[6],
+                           'alpha': actions[7],
+                           'beta': actions[8],
+                        #    'overlap_time': actions[9],
+                        #    'swing_time': actions[10],
+                        #    'delta_x': actions[11],
+                           'delta_y': actions[12],
+                           }
+        elif self.action == "L":
+            action_dict = {'x_velocity': actions[0],
+                           'y_velocity': actions[1],
+                           'yaw_rate': actions[2],
+                           'height': actions[3],
+                           'pitch': actions[4],
+                           'com_x_shift': actions[5],
+                           'z_clearance': actions[6],
+                           'alpha': actions[7],
+                           'beta': actions[8],
+                        #    'overlap_time': actions[9],
+                        #    'swing_time': actions[10],
+                        #    'delta_x': actions[11],
+                           'delta_y': actions[12],
+                           }
+        elif self.action == "R":
             action_dict = {'x_velocity': actions[0],
                            'y_velocity': actions[1],
                            'yaw_rate': actions[2],
@@ -106,7 +174,7 @@ class PupperEnv(gym.Env):
                            'delta_y': actions[12],
                            }
         observation = self.pupper.step(action_dict)
-        reward = self.reward(observation)
+        reward = self.getReward(observation)
         done = self.terminate(observation)
         self.env_step_counter += 1
         return observation, reward, done, {}
