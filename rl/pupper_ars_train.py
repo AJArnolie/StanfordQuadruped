@@ -196,7 +196,7 @@ class ARSLearner(object):
         except:
           pass
 
-        env = create_pupper_env(params.action)#gym.make(env_name)
+        env = create_pupper_env(params['action'])#gym.make(env_name)
         
         self.timesteps = 0
         self.action_size = env.action_space.shape[0]
@@ -212,13 +212,13 @@ class ARSLearner(object):
         self.max_past_avg_reward = float('-inf')
         self.num_episodes_used = float('inf')
 
-        if params.action == "F":
+        if params['action'] == "F":
           self.filename = "Forward_"
-        elif params.action == "B":
+        elif params['action'] == "B":
           self.filename = "Backward_"
-        elif params.action == "L":
+        elif params['action'] == "L":
           self.filename = "Left_Turn_"
-        elif params.action == "R":
+        elif params['action'] == "R":
           self.filename = "Right_Turn_"
 
         # create shared table for storing noise
@@ -234,7 +234,7 @@ class ARSLearner(object):
                                       env_name=env_name,
                                       policy_params=policy_params,
                                       deltas=deltas_id,
-                                      action=params.action,
+                                      action=params['action'],
                                       rollout_length=rollout_length,
                                       delta_std=delta_std) for i in range(num_workers)]
 
@@ -424,7 +424,7 @@ def run_ars(params):
       import tds_environments
     except:
       pass
-    env = create_pupper_env(params.action)#gym.make(params['env_name'])
+    env = create_pupper_env(params['action'])#gym.make(params['env_name'])
     ob_dim = env.observation_space.shape[0]
     ac_dim = env.action_space.shape[0]
     ac_lb = env.action_space.low
