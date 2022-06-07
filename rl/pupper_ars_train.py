@@ -27,7 +27,7 @@ import os
 from pupper_controller.src.pupperv2 import pupper_env
 
 def create_pupper_env(action="F"):
-  env = pupper_env.PupperEnv(render=False, action="F")
+  env = pupper_env.PupperEnv(render=False, action=action)
   return env
   
   

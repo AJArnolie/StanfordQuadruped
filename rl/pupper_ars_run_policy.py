@@ -21,7 +21,7 @@ import pickle
 from pupper_controller.src.pupperv2 import pupper_env
 
 def create_pupper_env(action="F"):
-  env = pupper_env.PupperEnv(render=True, action="F")
+  env = pupper_env.PupperEnv(render=True, action=action)
   return env
 
 
