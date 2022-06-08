@@ -58,7 +58,7 @@ def main(argv):
   if args.action == "F":
     filename = "Forward_"
   elif args.action == "B":
-    filename = "Backward_"
+    filename = "BackwardCorrecting2_"
   elif args.action == "L":
     filename = "Left_Turn_"
   elif args.action == "R":

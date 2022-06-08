@@ -215,7 +215,7 @@ class ARSLearner(object):
         if params['action'] == "F":
           self.filename = "Forward_"
         elif params['action'] == "B":
-          self.filename = "Backward_"
+          self.filename = "BackwardCorrecting2_"
         elif params['action'] == "L":
           self.filename = "Left_Turn_"
         elif params['action'] == "R":
