@@ -213,13 +213,13 @@ class ARSLearner(object):
         self.num_episodes_used = float('inf')
 
         if params['action'] == "F":
-          self.filename = "Forward_"
+          self.filename = "Forward2_"
         elif params['action'] == "B":
           self.filename = "BackwardCorrecting2_"
         elif params['action'] == "L":
-          self.filename = "Left_Turn_"
+          self.filename = "Left_Turn_" # Right turn
         elif params['action'] == "R":
-          self.filename = "Right_Turn_"
+          self.filename = "Right_Turn2_" # Left turn
 
         # create shared table for storing noise
         print("Creating deltas table.")

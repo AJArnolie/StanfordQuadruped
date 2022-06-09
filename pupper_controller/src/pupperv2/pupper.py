@@ -181,3 +181,20 @@ class Pupper:
             (linear, angular) = self.hardware_interface._bullet_client.getBaseVelocity(
                 self.hardware_interface.robot_id)
             return angular
+
+        
+    def body_position(self):
+        if self.run_on_robot:
+            raise NotImplementedError
+        else:
+            (position, orientation) = self.hardware_interface._bullet_client.getBasePositionAndOrientation(
+                self.hardware_interface.robot_id)
+            return position
+
+    def body_orientation(self):
+        if self.run_on_robot:
+            raise NotImplementedError
+        else:
+            (position, orientation) = self.hardware_interface._bullet_client.getBasePositionAndOrientation(
+                self.hardware_interface.robot_id)
+            return self.hardware_interface._bullet_client.getEulerFromQuaternion(orientation)

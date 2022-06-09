@@ -27,6 +27,8 @@ class PupperEnv(gym.Env):
             plane_tilt: Tilt in radians of the ground plane
         """
         self.action = action # F, B, L, R
+        self.position = None
+        self.orientation = None
 
         self.action_keys = ["x_velocity", "y_velocity", "yaw_rate", "height", "pitch", "x_com_shift", 
                             "z_clearance", "alpha", "beta", "overlap_time", "swing_time", "delta_x", "delta_y"]
@@ -35,8 +37,8 @@ class PupperEnv(gym.Env):
         # Order of elements:
         # x velocity, y velocity, yaw rate, height, pitch, x_com_shift
         self.action_space = gym.spaces.Box(
-            np.array([-1.2, -0.4, -2.0, -0.14, -0.1, -0.02, 0.065, 0.3, 0.3, 0.01, 0.01, 0.05, 0.05]),
-            np.array([1.2, 0.4, 2.0, -0.08, 0.1, 0.02, 0.10, 0.7, 0.7, 0.1, 0.1, 0.15, 0.15]),
+            np.array([-1.5, -0.4, -4.0, -0.14, -0.1, -0.02, 0.065, 0.3, 0.3, 0.01, 0.01, 0.05, 0.05]),
+            np.array([1.5, 0.4, 4.0, -0.08, 0.1, 0.02, 0.10, 0.7, 0.7, 0.1, 0.1, 0.15, 0.15]),
             dtype=np.float32)
 
         # Defines expected lower and upper bounds on observations
@@ -55,8 +57,8 @@ class PupperEnv(gym.Env):
             run_on_robot, render=render, render_meshes=render_meshes, plane_tilt=plane_tilt)
         
         # Overwrite the config values to match the specified action limits
-        self.pupper.config.min_x_velocity = -1.2
-        self.pupper.config.max_x_velocity = 1.2
+        self.pupper.config.min_x_velocity = -1.5
+        self.pupper.config.max_x_velocity = 1.5
         self.pupper.config.min_yaw_rate = -4.0
         self.pupper.config.max_yaw_rate = 4.0
         
@@ -64,25 +66,33 @@ class PupperEnv(gym.Env):
 
     def reset(self):
         ob = self.pupper.reset()
+        self.position = self.pupper.body_position()
+        self.orientation = self.pupper.body_orientation()
         self.pupper.slow_stand(do_sleep=False)
         self.pupper.start_trot()
         return self.pupper.get_observation()
 
     def forward_reward(self, observation):
         dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
-        return 1.0 + dx
+        wx = self.pupper.angular_velocity()[2] * self.pupper.config.dt
+        return 0.5 + dx * 2 - abs(self.pupper.body_orientation()[2] - self.orientation[2]) / 50
 
     def backward_reward(self, observation):
         dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
-        return 1.0 - dx
+        wx = self.pupper.angular_velocity()[2] * self.pupper.config.dt
+        return 0.5 - dx * 2 - abs(wx / 20) - abs(self.pupper.body_orientation()[2] - self.orientation[2]) / 200
     
     def turn_left_reward(self, observation):
-        dx = self.pupper.angular_velocity()[0] * self.pupper.config.dt
-        return 1.0 + dx
+        dist = (self.pupper.body_velocity()[0]**2 +\
+                self.pupper.body_velocity()[1]**2)**(1/2) * self.pupper.config.dt
+        wx = self.pupper.angular_velocity()[2] * self.pupper.config.dt
+        return 0.5 - wx - abs(dist / 10)
 
     def turn_right_reward(self, observation):
-        dx = self.pupper.angular_velocity()[0] * self.pupper.config.dt
-        return 1.0 - dx
+        dist = (self.pupper.body_velocity()[0]**2 +\
+                self.pupper.body_velocity()[1]**2)**(1/2) * self.pupper.config.dt
+        wx = self.pupper.angular_velocity()[2] * self.pupper.config.dt
+        return 0.5 + wx - abs(dist / 10)
 
     def getReward(self, observation):
         if self.action == "F":

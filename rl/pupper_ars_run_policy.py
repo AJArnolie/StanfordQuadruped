@@ -56,13 +56,13 @@ def main(argv):
   filename = ""
 
   if args.action == "F":
-    filename = "Forward_"
+    filename = "Forward2_"
   elif args.action == "B":
     filename = "BackwardCorrecting2_"
   elif args.action == "L":
     filename = "Left_Turn_"
   elif args.action == "R":
-    filename = "Right_Turn_"
+    filename = "Right_Turn2_"
 
   if params['policy_type'] == "linear":
     filename += "Linear"
@@ -70,6 +70,8 @@ def main(argv):
     filename += "NN"
 
   args.expert_policy_file = "data/" + filename + "_plus_latest.npz"
+  print(args.expert_policy_file)
+  input()
 
   if len(args.expert_policy_file)==0:
     args.expert_policy_file=tp.getDataPath()+"/"+args.envname+"/nn_policy_plus.npz" 

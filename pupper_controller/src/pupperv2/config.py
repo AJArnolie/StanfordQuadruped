@@ -4,12 +4,12 @@ import numpy as np
 class Config:
     def __init__(self):
         #################### COMMANDS ####################
-        self.min_x_velocity = -0.6
-        self.max_x_velocity = 0.6
-        self.min_y_velocity = -0.6
-        self.max_y_velocity = 0.6
-        self.min_yaw_rate = -2.5
-        self.max_yaw_rate = 2.5
+        self.min_x_velocity = -1.5
+        self.max_x_velocity = 1.5
+        self.min_y_velocity = -1.5
+        self.max_y_velocity = 1.5
+        self.min_yaw_rate = -3.5
+        self.max_yaw_rate = 3.5
         self.min_pitch = -30.0 * np.pi / 180.0
         self.max_pitch = 30.0 * np.pi / 180.0
 
