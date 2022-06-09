@@ -58,7 +58,7 @@ python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used
 ```
 Note that the `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). Additionally, note that we have included the policies we generated for each of the movements in this repository such that this step can be skipped if desired.
 
-If you have generated a new policy and want to run it, simply change the names of the .npz files associated with each action on line 61 of `pupper_ars_run_policy.py` to match the names on line 215 of `pupper_ars_train.py` such that the code writes your new policies to new files and reads them from these files.
+Finally, if you have generated a new policy and want to run it, simply change the names of the .npz files associated with each action on line 61 of `pupper_ars_run_policy.py` to match the names on line 215 of `pupper_ars_train.py` such that the code writes your new policies to new files and reads them from these files.
 
 Once a new policy has been trained, run the following command to run the policy on a simulation of Pupper:
 ```
