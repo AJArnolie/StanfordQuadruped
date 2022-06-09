@@ -1,90 +1,92 @@
 # Stanford Quadruped
 
-# CS199P Robotics Final Project: Pupper Speed
+# CS199P Robotics Final Project: Pupper Mobility Improvements
+<p align="center">
+AJ Arnolie and Ian Ng, Spring 2022 Final Project Documentation
+</p>
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
+</p>
+
+_Note: To view the original README for the StanfordQuadruped repository, see repo_README.md._
 
 ## Overview
-The goal of this project was to modify Pupper's policy training code to optimize the speed for the **Move Forward**, **Move Backward**, **Turn Left**, and **Turn Right** actions.
+Our goal for this project was to determine how far we could push Pupper in terms of optimizing movement speeds for the **Move Forward**, **Move Backward**, **Turn Left**, and **Turn Right** actions. 
 
-#
-#
-#
+After constructing our Pupper, through initial testing, we realized that the trotting movements of Pupper were not necessarily as fast as we imagined they could potentially be. Initially, we attempted simply increasing the expected X Velocity fed to the Pupper controller, but doing so quickly led to a loss in stability and a drastic increase in the frequency with which Pupper fell over (and even turned itself off on occasion). Through toying with the many configuration settings available to modify the gait, stance, and overall movement of the robot, we discovered methods for improving the stability of Pupper when moving at faster speeds. One such method involved manually shifting the amount the robot walks in front or behind it’s Center of Mass, essentially allowing Pupper to lean forward when moving forward and lean backward when walking back. Though these manual tuning methods were fairly effective, they were extremely time consuming and certainly didn't take advantage of all of the configuration options available, so at this point, we turned to **Reinforcement Learning**.
 
-This repository hosts the code for Stanford Pupper and Stanford Woofer, Raspberry Pi-based quadruped robots that can trot, walk, and jump. 
+Specifically, we made use of Augmented Random Search (ARS), a Reinforcement Learning technique introduced in a 2018 research paper titled [Simple random search provides a competitive approach to reinforcement learning](https://arxiv.org/pdf/1803.07055.pdf). From here, we explored which variables could be included in the action space to produce the best movement speed results for each action. Ultimately, we landed on the following set of variables to be the action space for our policy training:
+- **X Velocity** - Velocity in the forward/backward directions
+- **Y Velocity** - Velocity in the left/right directions
+- **Yaw Rate** - The rate at which Pupper rotates around the z-axis
+- **Height** - Desired distance from robot body to ground
+- **Pitch** - Rotation around y-axis
+- **X Shift** - The amount the robot walks in front of/behind it’s Center of Mass 
+- **Z Clearance** - The height the robot lifts it's legs
+- **Alpha** - Ratio between touchdown distance and total horizontal stance movement
+- **Beta** - Ratio between touchdown distance and total horizontal stance movement
+- **Delta Y** - The left/right distance between the feet of the robot
 
-![Pupper CC Max Morse](https://live.staticflickr.com/65535/49614690753_78edca83bc_4k.jpg)
+Using this set of variables, we trained policies for each of the movement options for 500 iterations using 200 rollouts, 16 deltas, and 16 directions. In terms of the policies we implemented for these four movements, for the Forward and Backward movements, the reward functions were generally structured as:
 
-Video of pupper in action: https://youtu.be/NIjodHA78UE
+`Reward = Stability Constant + X Velocity * Time - |Angular Velocity along Z-axis / 10| - |Yaw Displacement over entire Rollout / 100|`
 
-Project page: https://stanfordstudentrobotics.org/pupper
+This reward function rewards stability and forward motion speed while discouraging drifting. For the Left Turn and Right Turn movements, the reward functions were structured as:
 
-Documentation & build guide: https://pupper.readthedocs.io/en/latest/
+`Reward = Stability Constant + Angular Velocity along Z-axis * Time - |sqrt(X-displacement^2 + Y-displacement^2) / 10|`
 
-## How it works
-![Overview diagram](imgs/diagram1.jpg)
-The main program is ```run_robot.py``` which is located in this directory. The robot code is run as a loop, with a joystick interface, a controller, and a hardware interface orchestrating the behavior. 
+This reward function rewards stability and rotation speed while discouraging movement along the XY plane. To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. See the process for training and testing these policies below.
 
-The joystick interface is responsible for reading joystick inputs from a UDP socket and converting them into a generic robot ```command``` type. A separate program, ```joystick.py```, publishes these UDP messages, and is responsible for reading inputs from the PS4 controller over bluetooth. The controller does the bulk of the work, switching between states (trot, walk, rest, etc) and generating servo position targets. A detailed model of the controller is shown below. The third component of the code, the hardware interface, converts the position targets from the controller into PWM duty cycles, which it then passes to a Python binding to ```pigpiod```, which then generates PWM signals in software and sends these signals to the motors attached to the Raspberry Pi.
-![Controller diagram](imgs/diagram2.jpg)
-This diagram shows a breakdown of the robot controller. Inside, you can see four primary components: a gait scheduler (also called gait controller), a stance controller, a swing controller, and an inverse kinematics model. 
+## Usage
 
-The gait scheduler is responsible for planning which feet should be on the ground (stance) and which should be moving forward to the next step (swing) at any given time. In a trot for example, the diagonal pairs of legs move in sync and take turns between stance and swing. As shown in the diagram, the gait scheduler can be thought of as a conductor for each leg, switching it between stance and swing as time progresses. 
+First, clone this repo and switch to the correct branch using the following set of commands:
+```
+git clone https://github.com/AJArnolie/StanfordQuadruped.git
+cd StanfordQuadruped
+checkout pupper_api
+```
 
-The stance controller controls the feet on the ground, and is actually quite simple. It looks at the desired robot velocity, and then generates a body-relative target velocity for these stance feet that is in the opposite direction as the desired velocity. It also incorporates turning, in which case it rotates the feet relative to the body in the opposite direction as the desired body rotation. 
+Then, in order to ensure that all of the necessary packages are installed, run the following command in the outermost directory of the `StanfordQuadruped` repository:
+```
+python3 -m pip install -e .
+```
 
-The swing controller picks up the feet that just finished their stance phase, and brings them to their next touchdown location. The touchdown locations are selected so that the foot moves the same distance forward in swing as it does backwards in stance. For example, if in stance phase the feet move backwards at -0.4m/s (to achieve a body velocity of +0.4m/s) and the stance phase is 0.5 seconds long, then we know the feet will have moved backwards -0.20m. The swing controller will then move the feet forwards 0.20m to put the foot back in its starting place. You can imagine that if the swing controller only put the leg forward 0.15m, then every step the foot would lag more and more behind the body by -0.05m. 
+From here, in order to train a new policy for one of the four actions (Forward, Backward, Turn Left, Turn Right), simply run the `pupper_ars_train.py` script stored in `StanfordQuadruped/rl`. For example, to train the robot on the Forward Motion task, run the command below:
+```
+python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used=64 --action=F
+```
+Note that the `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). Additionally, note that we have included the policies we generated for each of the movements in this repository such that this step can be skipped if desired.
 
-Both the stance and swing controllers generate target positions for the feet in cartesian coordinates relative the body center of mass. It's convenient to work in cartesian coordinates for the stance and swing planning, but we now need to convert them to motor angles. This is done by using an inverse kinematics model, which maps between cartesian body coordinates and motor angles. These motor angles, also called joint angles, are then populated into the ```state``` variable and returned by the model. 
+Finally, if you have generated a new policy and want to run it, simply change the names of the .npz files associated with each action on line 61 of `pupper_ars_run_policy.py` to match the names on line 215 of `pupper_ars_train.py` such that the code writes your new policies to new files and reads them from these files.
+
+Once a new policy has been trained, run the following command to run the policy on a simulation of Pupper:
+```
+python3 pupper_ars_run_policy.py --json_file=data/params.json --realtime --playback_speed=1.0 --action=F
+```
+If you would like to tweak the reward functions being used for each of the movements, feel free to modify them in `StanfordQuadruped/pupper_controller/src/pupperv2/pupper_env.py`.
+
+## Results
+Below, we've included some clips from the results our of top performing policies in terms of speed:
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172910319-97da3af7-c9d3-425a-a189-53d2963188a2.gif"/>
+</p>
 
 
-## How to Build Pupper
-Main documentation: https://pupper.readthedocs.io/en/latest/
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172915891-a3fd738a-c6e7-4932-a17d-09c938937737.gif"/>
+</p>
 
-You can find the bill of materials, pre-made kit purchasing options, assembly instructions, software installation, etc at this website.
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
+</p>
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172841125-6d5bd62c-d359-4b06-abe4-e7c709388d5e.gif"/>
+</p>
 
 
-## Help
-- Feel free to raise an issue (https://github.com/stanfordroboticsclub/StanfordQuadruped/issues/new/choose) or email me at nathankau [at] stanford [dot] edu
-- We also have a Google group set up here: https://groups.google.com/forum/#!forum/stanford-quadrupeds
 
-
-## Using DJI Pupper (for Stuart)
-### Set up
-* Clone this repo and checkout this branch ("dji")
-* Clone https://github.com/stanfordroboticsclub/PupperKeyboardController and follow its README instructions
-
-### First Time Setup
-* Plug the Teensy into your computer and figure out which tty device it is.
-  * It shows up on my computer as "/dev/tty.usbmodem78075901" but it's probably different on yours
-  * Run `ls /dev | grep tty.usbmodem` to easily find out
-  * Update `SERIAL_PORT` in `djipupper/IndividualConfig.py` with the specific port name
-
-### Using DJI Pupper
-* Plug in the battery
-* Plug in the Teensy to your computer
-* Run the keyboard joystick program
-  * Run `python3 keyboard_joystick.py`
-  * It'll open up a small window and once it's loaded it'll say something like "click to enable"
-  * Note that that window has to be the "active" window on your computer for it to capture keyboard events. So make sure you click it before trying to give commands.
-  * Joystick to keyboard mapping:
-    * L1: q (activate/deactive)
-    * R1: e (trot/rest)
-    * Left joystick: wasd (forward/back & left/right)
-    * Right joystick: arrow keys (tilting up/down and yawing left/right)
-    * D-pad: ijkl (i/k for moving body up/down and j/l for rolling)
-* IMPORTANT: Orient the robot so that all the actuators are in their "zero" position. This means that the legs are extended and pointing straight down and that the abduction motors are perfectly horizontal. Plus/minus 5 degrees is usually what I go for although the closer you can make it the better.
-* Run the python controller with the motor-zeroing option
-  * `python3 run_djipupper.py --zero`
-  * The zeroing option tells the Teensy to store the current leg configuration as the "zero" state
-  * The Teensy will remember this position for as long as it's turned on, so even if we quit the `run_djipupper.py` program, we can re-use the calibration if we don't send the zeroing command.
-* When you're done using the robot, deactivate it by pressing `q` with the keyboard window active. Then press control-c.
-* For all subsequent runs, where you don't want to re-zero, run `python3 run_djipupper.py`. Since we're reusing the calibration from the earlier run, you don't need to move the legs to their zero position before running this command.
-* IMPORTANT: When in doubt, press `q` to deactivate.
-
-### Tuning
-* You can mess with the cartesian PD control gains by changing values in `djipupper/HardwareConfig.py`
-  * `MAX_CURRENT`: it's interesting to put it a little lower, like 4A, to test squishiness.
-  * `CART_POSITION_KPS`: Stiffness in the x, y, z directions. I've found 400 - 4000 to be interesting values. 400 is quite loose while 4000-6000 is very stiff. Much higher (>6000) and you risk uncontrolled oscillations even with higher damping.
-  * `CART_POSITION_KDS`: Damping in the x, y, z directions. 100 to 500 seems to be a good range. Use higher values when you're using higher stiffnesses to avoid oscillations, which totally does happen when you use, for example, kp=4000 and kd=1500. 
-  * `POSITION_KP` and `POSITION_KD` unused for cartesian pd control.
-* You can also mess with the usual values like x and y velocity, z_clearance (stepping height), etc in `djipupper/Config.py`
+## Reflections
+Ultimately, this project and this course in general was an incredibly interesting introduction into the awesome things that Reinforcement Learning can do along as well as the many challenges that come with working with real robots. Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself and see how the real-life robot performed in comparison to the simulated Pupper. This would be interesting to see, as from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. We also would have loved to spend time exploring what else could be done in order to increase Pupper's speed past configuration tweaks. For example, perhaps developing a new gait for Pupper or employing different Reinforcement Learning techniques other than ARS could have potentially been an interesting next step. Regardless, we are proud of what we were able to accomplish given the roadblocks we encountered along the way.
