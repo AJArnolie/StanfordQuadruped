@@ -16,7 +16,19 @@ Our goal for this project was to determine how far we could push Pupper in terms
 
 After constructing our Pupper, through initial testing, we realized that the trotting movements of Pupper were not necessarily as fast as we imagined they could potentially be. Initially, we attempted simply increasing the expected X Velocity fed to the Pupper controller, but doing so quickly led to a loss in stability and a drastic increase in the frequency with which Pupper fell over (and even turned itself off on occasion). Through toying with the many configuration settings available to modify the gait, stance, and overall movement of the robot, we discovered methods for improving the stability of Pupper when moving at faster speeds. One such method involved manually shifting the amount the robot walks in front or behind it’s Center of Mass, essentially allowing Pupper to lean forward when moving forward and lean backward when walking back. Though these manual tuning methods were fairly effective, they were extremely time consuming and certainly didn't take advantage of all of the configuration options available, so at this point, we turned to **Reinforcement Learning**.
 
-Specifically, we made use of Augmented Random Search (ARS), a straightforward Reinforcement Learning technique already implemented within the 
+Specifically, we made use of Augmented Random Search (ARS), a Reinforcement Learning technique introduced in a 2018 research paper titled (_Simple random search provides a competitive approach to reinforcement learning_)[https://arxiv.org/pdf/1803.07055.pdf] which involves 
+
+From here, we explored which variables could be included in the action space to produce the best movement speed results for each action. Ultimately, we landed on the following set of variables to be the action space for our policy training:
+- **X Velocity** - Velocity in the forward/backward directions
+- **Y Velocity** - Velocity in the left/right directions
+- **Yaw Rate** - The rate at which Pupper rotates around the z-axis
+- **Height** - Desired distance from robot body to ground
+- **Pitch** - Rotation around y-axis
+- **X Shift** - The amount the robot walks in front of/behind it’s Center of Mass 
+- **Z Clearance** - The height the robot lifts it's legs
+- **Alpha** - Ratio between touchdown distance and total horizontal stance movement
+- **Beta** - Ratio between touchdown distance and total horizontal stance movement
+- **Delta Y** - The left/right distance between the feet of the robot
 
 
 To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. 
@@ -36,7 +48,7 @@ python3 pupper_ars_run_policy.py --json_file=data/params.json --playback_speed=1
 
 
 ## Reflections
-Ultimately, this project and this course in general was an incredibly interesting and informative experience both in the potential use and flaws of reinforcement learning but also in the task of building and interacting with robots.
+Ultimately, this project and this course in general was an incredibly interesting introduction both into the potential uses and flaws of reinforcement learning but also in the frustrations of the task of building and interacting with robots IRL.
 
 RL is frustrating to get right and doesn’t always work
 The Sim-to-Real gap seems to get larger when going for speed
@@ -49,4 +61,4 @@ Don’t get COVID during Finals Week
 
 
 
-Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself because from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. 
+Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself and see how because from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. 
