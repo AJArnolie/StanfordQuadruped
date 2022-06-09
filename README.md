@@ -68,12 +68,18 @@ If you would like to tweak the reward functions being used for each of the movem
 Below, we've included some clips from the results our of top performing policies in terms of speed:
 
 <p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172910319-97da3af7-c9d3-425a-a189-53d2963188a2.gif"/>
+</p>
+
+<p align="center">
   <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
 </p>
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/57520931/172841125-6d5bd62c-d359-4b06-abe4-e7c709388d5e.gif"/>
 </p>
+
+
 
 ## Reflections
 Ultimately, this project and this course in general was an incredibly interesting introduction into the awesome things that Reinforcement Learning can do along as well as the many challenges that come with working with real robots. Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself and see how the real-life robot performed in comparison to the simulated Pupper. This would be interesting to see, as from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. We also would have loved to spend time exploring what else could be done in order to increase Pupper's speed past configuration tweaks. For example, perhaps developing a new gait for Pupper or employing different Reinforcement Learning techniques other than ARS could have potentially been an interesting next step. Regardless, we are proud of what we were able to accomplish given the roadblocks we encountered along the way.
