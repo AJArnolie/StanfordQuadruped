@@ -2,7 +2,7 @@
 
 # CS199P Robotics Final Project: Pupper Mobility Improvements
 <p align="center">
-AJ Arnolie and Ian Ng, Spring 2021 Final Project Documentation
+AJ Arnolie and Ian Ng, Spring 2022 Final Project Documentation
 </p>
 
 <p align="center">
