@@ -28,7 +28,15 @@ Specifically, we made use of Augmented Random Search (ARS), a Reinforcement Lear
 - **Beta** - Ratio between touchdown distance and total horizontal stance movement
 - **Delta Y** - The left/right distance between the feet of the robot
 
-Using this set of variables, we trained policies for each of the movement options for 500 iterations using 200 rollouts, 16 deltas, and 16 directions. To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. See the process for training and testing these policies below.
+Using this set of variables, we trained policies for each of the movement options for 500 iterations using 200 rollouts, 16 deltas, and 16 directions. In terms of the policies we implemented for these four movements, for the Forward and Backward movements, the reward functions were generally structured as:
+
+`Reward = Stability Constant + X Velocity * Time - |Angular Velocity along Z-axis / 10| - |Yaw Displacement over entire Rollout / 100|`
+
+This reward function rewards stability and forward motion speed while discouraging drifting. For the Left Turn and Right Turn movements, the reward functions were structured as:
+
+`Reward = Stability Constant + Angular Velocity along Z-axis * Time - |sqrt(X-displacement^2 + Y-displacement^2) / 10|`
+
+This reward function rewards stability and rotation speed while discouraging movement along the XY plane. To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. See the process for training and testing these policies below.
 
 ## Usage
 
@@ -36,10 +44,14 @@ In order to train a new policy for one of the four actions (Forward, Backward, T
 ```
 python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used=64 --action=F
 ```
-The `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). Once a new policy has been trained, or if you would like to use one of the policies we generated, run the following command to run the policy on a simulation of Pupper:
+Note that the `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). 
+
+Once a new policy has been trained, run the following command to run the policy on a simulation of Pupper:
 ```
 python3 pupper_ars_run_policy.py --json_file=data/params.json --playback_speed=1.0 --action=F
 ```
+
+We have included the policies we have generated for each of the movements in this repository such that running the second command will allow users to run these policies on the simulated Pupper immediately.
 
 ## Results
 
