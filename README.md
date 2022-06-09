@@ -42,37 +42,38 @@ This reward function rewards stability and rotation speed while discouraging mov
 
 First, clone this repo and switch to the correct branch using the following set of commands:
 ```
-git clone 
+git clone https://github.com/AJArnolie/StanfordQuadruped.git
+cd StanfordQuadruped
+checkout pupper_api
 ```
 
-In order to train a new policy for one of the four actions (Forward, Backward, Turn Left, Turn Right), simply run the `pupper_ars_train.py` script stored in `StanfordQuadruped/rl`. For example, to train the robot on the Forward Motion task, run the command below:
+Then, in order to ensure that all of the necessary packages are installed, run the following command in the outermost directory of the `StanfordQuadruped` repository:
+```
+python3 -m pip install -e .
+```
+
+From here, in order to train a new policy for one of the four actions (Forward, Backward, Turn Left, Turn Right), simply run the `pupper_ars_train.py` script stored in `StanfordQuadruped/rl`. For example, to train the robot on the Forward Motion task, run the command below:
 ```
 python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used=64 --action=F
 ```
-Note that the `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). 
+Note that the `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). Additionally, note that we have included the policies we generated for each of the movements in this repository such that this step can be skipped if desired.
 
 Once a new policy has been trained, run the following command to run the policy on a simulation of Pupper:
 ```
 python3 pupper_ars_run_policy.py --json_file=data/params.json --playback_speed=1.0 --action=F
 ```
-
-We have included the policies we have generated for each of the movements in this repository such that running the second command will allow users to run these policies on the simulated Pupper immediately.
+If you would like to tweak the reward functions being used for each of the movements, feel free to modify them in `StanfordQuadruped/pupper_controller/src/pupperv2/pupper_env.py`.
 
 ## Results
+Below, we've included some clips from the results our of top performing policies in terms of speed:
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
+</p>
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172841125-6d5bd62c-d359-4b06-abe4-e7c709388d5e.gif"/>
+</p>
 
 ## Reflections
-Ultimately, this project and this course in general was an incredibly interesting introduction both into the potential uses and flaws of reinforcement learning but also in the frustrations of the task of building and interacting with robots IRL.
-
-RL is frustrating to get right and doesn’t always work
-The Sim-to-Real gap seems to get larger when going for speed
-IRL Pupper will always find a way to slip and flip itself over
-Likely close to the fastest Pupper can get using its current controller
-Potentially applying a different gait
-Exploring more RL learning policies
-Robots are prone to break and get broken (or disassembled)
-Don’t get COVID during Finals Week
-
-
-
-Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself and see how because from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. 
+Ultimately, this project and this course in general was an incredibly interesting introduction into the awesome things that Reinforcement Learning can do along as well as the many challenges that come with working with real robots. Given more time and less frustrating roadblocks (ex. COVID, disassembled robots) we would have liked to get these policies running on the Pupper robot itself and see how the real-life robot performed in comparison to the simulated Pupper. This would be interesting to see, as from what we have observed through work on this project, the Sim-to-Real gap only gets larger as the speed of the robot increases. We also would have loved to spend time exploring what else could be done in order to increase Pupper's speed past configuration tweaks. For example, perhaps developing a new gait for Pupper or employing different Reinforcement Learning techniques other than ARS could have potentially been an interesting next step. Regardless, we are proud of what we were able to accomplish given the roadblocks we encountered along the way.
