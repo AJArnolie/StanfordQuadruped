@@ -67,7 +67,7 @@ python3 pupper_ars_run_policy.py --json_file=data/params.json --realtime --playb
 If you would like to tweak the reward functions being used for each of the movements, feel free to modify them in `StanfordQuadruped/pupper_controller/src/pupperv2/pupper_env.py`.
 
 ## Results
-Below, we've included some clips from the results our of top performing policies in terms of speed:
+Below, we've included some clips from the results our of top performing policies in terms of speed, stability, and consistency:
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/57520931/172910319-97da3af7-c9d3-425a-a189-53d2963188a2.gif"/>
