@@ -1,10 +1,44 @@
 # Stanford Quadruped
 
-# CS199P Robotics Final Project: Pupper Speed
+# CS199P Robotics Final Project: Pupper Mobility Improvements
+<p align="center">
+AJ Arnolie and Ian Ng, Spring 2021 Final Project Documentation
+</p>
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
+</p>
 
 ## Overview
-The goal of this project was to modify Pupper's policy training code to optimize the speed for the **Move Forward**, **Move Backward**, **Turn Left**, and **Turn Right** actions.
+Our goal for this project was to determine how far we could push Pupper in terms of optimizing movement speeds for the **Move Forward**, **Move Backward**, **Turn Left**, and **Turn Right** actions. 
+
+After constructing our Pupper, through initial testing, we realized that 
+
+But simply increasing the expected speed for Pupper quickly led to a loss in stability and a drastic increase in the frequency with which Pupper fell over (and even turned itself off on occasion). Through toying with the many configuration settings available to modify the gait, stance, and overall movement of the robot, we discovered methods for improving the stability of Pupper when moving at faster speeds. One such method involved manually shifting the amount the robot walks in front or behind it’s Center of Mass, essentially allowing Pupper to lean forward when moving forward and lean backward when walking back. Though these manual tuning methods were fairly effective, they were extremely time consuming and certainly didn't take advantage of all of the configuration options available, so at this point, we turned to **Reinforcement Learning**.
+
+Specifically, we made use of Augmented Random Search (ARS), 
+
+
+To make this process easier, we modified Pupper's policy training code to build out a more straightforward framework for generating the policies for each action. 
+
+## Usage
+
+In order to train a new policy for one of the four actions (Forward, Backward, Turn Left, Turn Right), simply run the `pupper_ars_train.py` script stored in `StanfordQuadruped/rl`. For example, to train the robot on the Forward Motion task, run the command below:
+```
+python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used=64 --action=F
+```
+The `--action` option allows users to select one of the four currently supported actions, Forward Motion (F), Backward Motion (B), Left Turning (L), and Right Turning (R). Once a new policy has been trained, or if you would like to use one of the policies we generated, run the following command to run the policy on a simulation of Pupper:
+```
+python3 pupper_ars_run_policy.py --json_file=data/params.json --playback_speed=1.0 --action=F
+```
+
+## Results
+
+
+## Reflections
+Ultimately, this project and this course in general was an incredibly interesting and informative experience both in the potential use and flaws of reinforcement learning but also in the task of building and interacting with robots.
+
+
 
 #
 #
