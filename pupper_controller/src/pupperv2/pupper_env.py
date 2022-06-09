@@ -30,16 +30,21 @@ class PupperEnv(gym.Env):
         self.position = None
         self.orientation = None
 
-        self.action_keys = ["x_velocity", "y_velocity", "yaw_rate", "height", "pitch", "x_com_shift", 
-                            "z_clearance", "alpha", "beta", "overlap_time", "swing_time", "delta_x", "delta_y"]
-
         # Defines lower and upper bounds on possible actions
-        # Order of elements:
-        # x velocity, y velocity, yaw rate, height, pitch, x_com_shift
-        self.action_space = gym.spaces.Box(
-            np.array([-1.5, -0.4, -4.0, -0.14, -0.1, -0.02, 0.065, 0.3, 0.3, 0.01, 0.01, 0.05, 0.05]),
-            np.array([1.5, 0.4, 4.0, -0.08, 0.1, 0.02, 0.10, 0.7, 0.7, 0.1, 0.1, 0.15, 0.15]),
-            dtype=np.float32)
+        if self.action in ["L", "R"]:
+            self.action_keys = ["x_velocity", "y_velocity", "yaw_rate", "height", "pitch", "x_com_shift", 
+                             "z_clearance", "alpha", "beta", "overlap_time", "swing_time", "delta_x", "delta_y"]
+            self.action_space = gym.spaces.Box(
+                np.array([-1.5, -0.4, -4.0, -0.14, -0.1, -0.02, 0.065, 0.3, 0.3, 0.01, 0.01, 0.05, 0.05]),
+                np.array([1.5, 0.4, 4.0, -0.08, 0.1, 0.02, 0.10, 0.7, 0.7, 0.1, 0.1, 0.15, 0.15]),
+                dtype=np.float32)
+        else:
+            self.action_keys = ["x_velocity", "y_velocity", "yaw_rate", "height", "pitch", "x_com_shift", 
+                            "z_clearance", "alpha", "beta", "delta_y"]
+            self.action_space = gym.spaces.Box(
+                np.array([-1.5, -0.3, -4.0, -0.16, -0.1, -0.03, 0.065, 0.3, 0.3, 0.05]),
+                np.array([1.5, 0.3, 4.0, -0.06, 0.1, 0.03, 0.11, 0.7, 0.7, 0.15]),
+                dtype=np.float32)
 
         # Defines expected lower and upper bounds on observations
         # Order of elements
@@ -75,7 +80,7 @@ class PupperEnv(gym.Env):
     def forward_reward(self, observation):
         dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
         wx = self.pupper.angular_velocity()[2] * self.pupper.config.dt
-        return 0.5 + dx * 2 - abs(self.pupper.body_orientation()[2] - self.orientation[2]) / 50
+        return 0.5 + dx * 2 - abs(wx / 20) - abs(self.pupper.body_orientation()[2] - self.orientation[2]) / 200
 
     def backward_reward(self, observation):
         dx = self.pupper.body_velocity()[0] * self.pupper.config.dt
@@ -133,10 +138,7 @@ class PupperEnv(gym.Env):
                            'z_clearance': actions[6],
                            'alpha': actions[7],
                            'beta': actions[8],
-                        #    'overlap_time': actions[9],
-                        #    'swing_time': actions[10],
-                        #    'delta_x': actions[11],
-                           'delta_y': actions[12],
+                           'delta_y': actions[9],
                            }
         elif self.action == "B":
             action_dict = {'x_velocity': actions[0],
@@ -148,10 +150,7 @@ class PupperEnv(gym.Env):
                            'z_clearance': actions[6],
                            'alpha': actions[7],
                            'beta': actions[8],
-                        #    'overlap_time': actions[9],
-                        #    'swing_time': actions[10],
-                        #    'delta_x': actions[11],
-                           'delta_y': actions[12],
+                           'delta_y': actions[9],
                            }
         elif self.action == "L":
             action_dict = {'x_velocity': actions[0],
@@ -163,9 +162,6 @@ class PupperEnv(gym.Env):
                            'z_clearance': actions[6],
                            'alpha': actions[7],
                            'beta': actions[8],
-                        #    'overlap_time': actions[9],
-                        #    'swing_time': actions[10],
-                        #    'delta_x': actions[11],
                            'delta_y': actions[12],
                            }
         elif self.action == "R":
@@ -178,9 +174,6 @@ class PupperEnv(gym.Env):
                            'z_clearance': actions[6],
                            'alpha': actions[7],
                            'beta': actions[8],
-                        #    'overlap_time': actions[9],
-                        #    'swing_time': actions[10],
-                        #    'delta_x': actions[11],
                            'delta_y': actions[12],
                            }
         observation = self.pupper.step(action_dict)

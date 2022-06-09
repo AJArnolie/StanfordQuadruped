@@ -28,7 +28,7 @@ def create_pupper_env(action="F"):
 def main(argv):
   import argparse
   parser = argparse.ArgumentParser()
-  parser.add_argument('--expert_policy_file', type=str, default="data/Right_Turn_Linear_plus_latest.npz", help='relative path to the policy weights. Defaults to where ars_train outputs weight file.')
+  parser.add_argument('--expert_policy_file', type=str, default="", help='relative path to the policy weights. Defaults to where ars_train outputs weight file.')
 
   parser.add_argument('--num_rollouts', type=int, default=20,
                       help='Number of expert rollouts. Default is 20.')
@@ -53,25 +53,32 @@ def main(argv):
       params = json.load(f)
   print("params=",params)
 
-  filename = ""
+  
 
-  if args.action == "F":
-    filename = "Forward2_"
-  elif args.action == "B":
-    filename = "BackwardCorrecting2_"
-  elif args.action == "L":
-    filename = "Left_Turn_"
-  elif args.action == "R":
-    filename = "Right_Turn2_"
+  if args.expert_policy_file == "":
+    #filename = ""
+    if args.action == "F":
+      args.expert_policy_file = "data/Forward_Linear_plus_best.npz"
+      #filename = "Forward3_"
+    elif args.action == "B":
+      args.expert_policy_file = "data/Backward_Linear_plus_best.npz"
+      #filename = "Backward3_"
+    elif args.action == "L":
+      args.expert_policy_file = "data/Left_Turn_Linear_plus_best.npz"
+      #filename = "Left_Turn_"
+    elif args.action == "R":
+      args.expert_policy_file = "data/Right_Turn_Linear_plus_best.npz"
+      #filename = "Right_Turn2_"
 
-  if params['policy_type'] == "linear":
-    filename += "Linear"
-  else:
-    filename += "NN"
+    # Uncomment if running your own policy
+    # if params['policy_type'] == "linear":
+    #   filename += "Linear"
+    # else:
+    #   filename += "NN"
+    
+    # args.expert_policy_file = "data/" + filename + "_plus_latest.npz"
 
-  args.expert_policy_file = "data/" + filename + "_plus_latest.npz"
   print(args.expert_policy_file)
-  input()
 
   if len(args.expert_policy_file)==0:
     args.expert_policy_file=tp.getDataPath()+"/"+args.envname+"/nn_policy_plus.npz" 
