@@ -73,6 +73,11 @@ Below, we've included some clips from the results our of top performing policies
   <img src="https://user-images.githubusercontent.com/57520931/172910319-97da3af7-c9d3-425a-a189-53d2963188a2.gif"/>
 </p>
 
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/57520931/172915891-a3fd738a-c6e7-4932-a17d-09c938937737.gif"/>
+</p>
+
 <p align="center">
   <img src="https://user-images.githubusercontent.com/57520931/172830198-0aa07c93-ac87-444e-b930-929a41eb14fb.gif"/>
 </p>
