@@ -16,9 +16,7 @@ Our goal for this project was to determine how far we could push Pupper in terms
 
 After constructing our Pupper, through initial testing, we realized that the trotting movements of Pupper were not necessarily as fast as we imagined they could potentially be. Initially, we attempted simply increasing the expected X Velocity fed to the Pupper controller, but doing so quickly led to a loss in stability and a drastic increase in the frequency with which Pupper fell over (and even turned itself off on occasion). Through toying with the many configuration settings available to modify the gait, stance, and overall movement of the robot, we discovered methods for improving the stability of Pupper when moving at faster speeds. One such method involved manually shifting the amount the robot walks in front or behind it’s Center of Mass, essentially allowing Pupper to lean forward when moving forward and lean backward when walking back. Though these manual tuning methods were fairly effective, they were extremely time consuming and certainly didn't take advantage of all of the configuration options available, so at this point, we turned to **Reinforcement Learning**.
 
-Specifically, we made use of Augmented Random Search (ARS), a Reinforcement Learning technique introduced in a 2018 research paper titled (_Simple random search provides a competitive approach to reinforcement learning_)[https://arxiv.org/pdf/1803.07055.pdf] which involves 
-
-From here, we explored which variables could be included in the action space to produce the best movement speed results for each action. Ultimately, we landed on the following set of variables to be the action space for our policy training:
+Specifically, we made use of Augmented Random Search (ARS), a Reinforcement Learning technique introduced in a 2018 research paper titled (_Simple random search provides a competitive approach to reinforcement learning_)[https://arxiv.org/pdf/1803.07055.pdf]. From here, we explored which variables could be included in the action space to produce the best movement speed results for each action. Ultimately, we landed on the following set of variables to be the action space for our policy training:
 - **X Velocity** - Velocity in the forward/backward directions
 - **Y Velocity** - Velocity in the left/right directions
 - **Yaw Rate** - The rate at which Pupper rotates around the z-axis
@@ -30,8 +28,7 @@ From here, we explored which variables could be included in the action space to 
 - **Beta** - Ratio between touchdown distance and total horizontal stance movement
 - **Delta Y** - The left/right distance between the feet of the robot
 
-
-To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. 
+Using this set of variables, we trained policies for each of the movement options for 500 iterations using 200 rollouts, 16 deltas, and 16 directions. To make this process easier, we modified Pupper's policy training code in the `pupper_api` branch of the StanfordQuadruped repo to build out a more straightforward framework for generating the policies for each action. See the process for training and testing these policies below.
 
 ## Usage
 
