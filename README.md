@@ -40,6 +40,11 @@ This reward function rewards stability and rotation speed while discouraging mov
 
 ## Usage
 
+First, clone this repo and switch to the correct branch using the following set of commands:
+```
+git clone 
+```
+
 In order to train a new policy for one of the four actions (Forward, Backward, Turn Left, Turn Right), simply run the `pupper_ars_train.py` script stored in `StanfordQuadruped/rl`. For example, to train the robot on the Forward Motion task, run the command below:
 ```
 python3 pupper_ars_train.py --rollout_length=200 --n_directions=64 --deltas_used=64 --action=F
